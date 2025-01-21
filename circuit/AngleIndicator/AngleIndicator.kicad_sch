@@ -5277,7 +5277,8 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x04")
-		(at 219.71 73.66 0)
+		(at 219.71 76.2 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5285,7 +5286,7 @@
 		(dnp no)
 		(uuid "13d53ae0-cf23-4005-bd1d-5f65228be8fe")
 		(property "Reference" "J2"
-			(at 222.25 73.6599 0)
+			(at 222.25 76.2001 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5294,7 +5295,7 @@
 			)
 		)
 		(property "Value" "Conn_01x04"
-			(at 222.25 76.1999 0)
+			(at 222.25 73.6601 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5303,7 +5304,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_PH_S4B-PH-K_1x04_P2.00mm_Horizontal"
-			(at 219.71 73.66 0)
+			(at 219.71 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5312,7 +5313,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 219.71 73.66 0)
+			(at 219.71 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5321,7 +5322,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 219.71 73.66 0)
+			(at 219.71 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
