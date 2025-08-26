@@ -50,59 +50,53 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-osThreadId defaultTaskHandle;
-osTimerId as5600Handle;
-
+TaskHandle_t defaultTaskHandle;
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 int8_t user_i2c_read(uint8_t id, uint8_t reg_addr, uint8_t *data, uint16_t len);
 /* USER CODE END FunctionPrototypes */
 
-void StartDefaultTask(void const * argument);
-void as5600_timer_callback(void const * argument);
+void StartDefaultTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
-void MX_FREERTOS_Init(void) {
-  /* USER CODE BEGIN Init */
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
+void MX_FREERTOS_Init(void)
+{
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* USER CODE BEGIN RTOS_MUTEX */
+	/* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
+	/* USER CODE END RTOS_MUTEX */
 
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
+	/* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
+	/* USER CODE END RTOS_SEMAPHORES */
 
-  /* Create the timer(s) */
-  /* definition and creation of as5600 */
-  osTimerDef(as5600, as5600_timer_callback);
-  as5600Handle = osTimerCreate(osTimer(as5600), osTimerPeriodic, NULL);
+	/* Create the timer(s) */
 
-  /* USER CODE BEGIN RTOS_TIMERS */
+	/* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
+	/* USER CODE END RTOS_TIMERS */
 
-  /* USER CODE BEGIN RTOS_QUEUES */
+	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
+	/* USER CODE END RTOS_QUEUES */
 
-  /* Create the thread(s) */
-  /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+	/* Create the thread(s) */
+	/* definition and creation of defaultTask */
 
-  /* USER CODE BEGIN RTOS_THREADS */
+	xTaskCreate(StartDefaultTask, "defaultTask", 128, NULL, osPriorityNormal, &defaultTaskHandle);
+
+	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
-
+	/* USER CODE END RTOS_THREADS */
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -112,58 +106,49 @@ void MX_FREERTOS_Init(void) {
  * @retval None
  */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
+void StartDefaultTask(void *argument)
 {
-  /* USER CODE BEGIN StartDefaultTask */
+	/* USER CODE BEGIN StartDefaultTask */
 	/* Infinite loop */
-	osTimerStart(as5600Handle, 10);
-	for(;;)
+	SEGGER_RTT_printf(0, "defaultTask started\n");
+	for (;;)
 	{
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin,GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 		uint8_t data[8];
-		if(!user_i2c_read(0x36, 0x0C, data, 2)){
+		if (!user_i2c_read(0x36, 0x0C, data, 2))
+		{
 
 			FDCAN_TxHeaderTypeDef TxHeader;
-			TxHeader.Identifier =0x442;
+			TxHeader.Identifier = 0x442;
 			TxHeader.IdType = FDCAN_STANDARD_ID;
 			TxHeader.TxFrameType = FDCAN_DATA_FRAME;
-			TxHeader.DataLength = FDCAN_DLC_BYTES_8;
+			TxHeader.DataLength = FDCAN_DLC_BYTES_2;
 			TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
 			TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
 			TxHeader.FDFormat = FDCAN_CLASSIC_CAN;
 			TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
 			TxHeader.MessageMarker = 0;
-			data[2]=0x20;
-			data[3]=0x30;
-			data[4]=0x40;
-			data[5]=0x50;
-			data[6]=0x60;
-			data[7]=0x70;
 
+			SEGGER_RTT_printf(0, "Angle: %d\n", (data[0] << 8) | data[1]);
 
-			if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader,data) != HAL_OK)
+			if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, data) != HAL_OK)
 			{
 				Error_Handler();
 			}
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin,GPIO_PIN_SET);
-			while(HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan1) != 3) {
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+			while (HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan1) != 3)
+			{
 			}
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin,GPIO_PIN_RESET);
-
-		}else{
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+		}
+		else
+		{
 			SEGGER_RTT_printf(0, "error at user_i2c_read\n");
 		}
 
 		vTaskDelay(20);
 	}
-  /* USER CODE END StartDefaultTask */
-}
-
-/* as5600_timer_callback function */
-void as5600_timer_callback(void const * argument)
-{
-  /* USER CODE BEGIN as5600_timer_callback */
-  /* USER CODE END as5600_timer_callback */
+	/* USER CODE END StartDefaultTask */
 }
 
 /* Private application code --------------------------------------------------*/
@@ -171,11 +156,12 @@ void as5600_timer_callback(void const * argument)
 
 int8_t user_i2c_read(uint8_t id, uint8_t reg_addr, uint8_t *data, uint16_t len)
 {
-	if(HAL_I2C_Master_Transmit(&hi2c1, (id << 1), &reg_addr, 1, 10) != HAL_OK) return -1;
-	if(HAL_I2C_Master_Receive(&hi2c1, (id << 1) | 0x01, data, len, 10) != HAL_OK) return -1;
+	if (HAL_I2C_Master_Transmit(&hi2c1, (id << 1), &reg_addr, 1, 10) != HAL_OK)
+		return -1;
+	if (HAL_I2C_Master_Receive(&hi2c1, (id << 1) | 0x01, data, len, 10) != HAL_OK)
+		return -1;
 
 	return 0;
 }
 
 /* USER CODE END Application */
-
