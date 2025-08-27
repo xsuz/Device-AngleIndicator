@@ -26,7 +26,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
 #include "SEGGER_RTT.h"
 /* USER CODE END Includes */
 
@@ -64,37 +63,6 @@ extern "C"
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-// FDCAN1 Callback
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
-{
-	FDCAN_RxHeaderTypeDef fdcan1RxHeader;
-	uint8_t fdcan1RxData[64];
-
-	SEGGER_RTT_printf(0, "callback : ");
-
-	if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != RESET)
-	{
-
-		if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &fdcan1RxHeader, fdcan1RxData) != HAL_OK)
-		{
-			/* Reception Error */
-			Error_Handler();
-		}
-
-		SEGGER_RTT_printf(0, "fdcan1 received data from 0x%04x: ", fdcan1RxHeader.Identifier);
-		// Prepare Tx data for fdcan2
-		for (int32_t i = 0; i < 8; i++)
-		{
-			SEGGER_RTT_printf(0, "%02x, ", fdcan1RxData[i]);
-		}
-		SEGGER_RTT_printf(0, " t=%d\n\r", HAL_GetTick());
-		if (HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
-		{
-			Error_Handler();
-		}
-	}
-}
-
 /* USER CODE END 0 */
 
 /**
@@ -105,7 +73,6 @@ int main(void)
 {
 
 	/* USER CODE BEGIN 1 */
-	setbuf(stdout, NULL);
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -134,12 +101,6 @@ int main(void)
 	/* USER CODE BEGIN 2 */
 
 	if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK)
-	{
-		Error_Handler();
-	}
-
-	// Activate the notification for new data in FIFO0 for FDCAN1
-	if (HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
 	{
 		Error_Handler();
 	}
@@ -187,9 +148,9 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
-  RCC_OscInitStruct.PLL.PLLN = 12;
+  RCC_OscInitStruct.PLL.PLLN = 6;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV4;
+  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {

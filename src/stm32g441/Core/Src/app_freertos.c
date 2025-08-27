@@ -115,21 +115,20 @@ void StartDefaultTask(void *argument)
 	{
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 		uint8_t data[8];
-		if (!user_i2c_read(0x36, 0x0C, data, 2))
+		if (!user_i2c_read(0x36, 0x0C, data, 2)&&!user_i2c_read(0x36, 0x0B, data + 2, 1))
 		{
-
 			FDCAN_TxHeaderTypeDef TxHeader;
 			TxHeader.Identifier = 0x442;
 			TxHeader.IdType = FDCAN_STANDARD_ID;
 			TxHeader.TxFrameType = FDCAN_DATA_FRAME;
-			TxHeader.DataLength = FDCAN_DLC_BYTES_2;
+			TxHeader.DataLength = FDCAN_DLC_BYTES_3;
 			TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
 			TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
 			TxHeader.FDFormat = FDCAN_CLASSIC_CAN;
 			TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
 			TxHeader.MessageMarker = 0;
 
-			SEGGER_RTT_printf(0, "Angle: %d\n", (data[0] << 8) | data[1]);
+			SEGGER_RTT_printf(0, "Angle: %d, Status: %02x\n", (data[0] << 8) | data[1], data[2]);
 
 			if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, data) != HAL_OK)
 			{
