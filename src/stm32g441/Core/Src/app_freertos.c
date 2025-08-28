@@ -109,6 +109,7 @@ void MX_FREERTOS_Init(void)
 void StartDefaultTask(void *argument)
 {
 	/* USER CODE BEGIN StartDefaultTask */
+	UNUSED(argument);
 	/* Infinite loop */
 	SEGGER_RTT_printf(0, "defaultTask started\n");
 	for (;;)
